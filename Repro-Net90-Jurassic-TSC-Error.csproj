@@ -11,5 +11,14 @@
   <ItemGroup>
     <PackageReference Include="Jurassic" Version="3.2.7" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="scriptApiDeclaration.d.ts">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="typescript-compiler-scriptinterfaceplugin.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>
