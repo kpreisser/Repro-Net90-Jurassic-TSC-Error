@@ -13,8 +13,7 @@ using var httpClient = new HttpClient();
 
 string typescriptServicesCode = await (await httpClient.GetAsync("https://github.com/microsoft/TypeScript/raw/refs/tags/v4.5.5/lib/typescriptServices.js")).Content.ReadAsStringAsync();
 string scriptApiEnvironmentLib =
-    await (await httpClient.GetAsync("https://github.com/microsoft/TypeScript/raw/refs/tags/v4.5.5/lib/lib.es5.d.ts")).Content.ReadAsStringAsync() + "\r\n" +
-    await (await httpClient.GetAsync("https://github.com/microsoft/TypeScript/raw/refs/tags/v4.5.5/lib/lib.es2015.promise.d.ts")).Content.ReadAsStringAsync();
+    await (await httpClient.GetAsync("https://github.com/microsoft/TypeScript/raw/refs/tags/v4.5.5/lib/lib.es5.d.ts")).Content.ReadAsStringAsync();
 
 string scriptApiLib = File.ReadAllText("scriptApiDeclaration.d.ts");
 
@@ -55,7 +54,7 @@ libFiles[scriptApiDeclarationFileName] = scriptApiLib;
 
 var resultObject = (ObjectInstance)transpileCodeFunction.CallLateBound(
     Undefined.Value,
-    "",
+    /* scriptContent */ string.Empty,
     "script1.ts",
     libFiles,
     compilerOptions);
@@ -65,32 +64,36 @@ var outputTextValue = resultObject["outputText"];
 
 if (!ScriptValueIsString(outputTextValue)) {
     string diagnostic = string.Empty;
-    var errors = (ObjectInstance)resultObject["errors"]!;
-    var firstError = errors[0];
 
-    if (!ScriptValueIsNullOrUndefined(firstError)) {
-        var firstErrorObj = (ObjectInstance)firstError;
-        var errStart = firstErrorObj["start"];
+    var errors = (ObjectInstance)resultObject["errors"]!;
+    int errorsLength = Convert.ToInt32(errors["length"]);
+
+    for (int i = 0; i < errorsLength; i++) {
+        var errorObj = (ObjectInstance)errors[i];
+        var errStart = errorObj["start"];
 
         if (!ScriptValueIsUndefined(errStart)) {
             var tsObj = (ObjectInstance)engine.Global["ts"];
             var lineAndCharObj = (ObjectInstance)((FunctionInstance)tsObj["getLineAndCharacterOfPosition"])
-                    .CallLateBound(tsObj, firstErrorObj["file"], errStart);
+                    .CallLateBound(tsObj, errorObj["file"], errStart);
             var line = Convert.ToInt32(lineAndCharObj["line"]);
 
-            diagnostic = $"{((ObjectInstance)firstErrorObj["file"])["fileName"]}: Line {line.ToString(CultureInfo.InvariantCulture)}: ";
+            diagnostic += $"{((ObjectInstance)errorObj["file"])["fileName"]}: Line {line.ToString(CultureInfo.InvariantCulture)}: ";
         }
 
-        var messageText = firstErrorObj["messageText"];
+        var messageText = errorObj["messageText"];
         if (!ScriptValueIsString(messageText)) {
             // ts.DiagnosticMessageChain
             messageText = ((ObjectInstance)messageText)["messageText"];
         }
 
         diagnostic += messageText.ToString();
+
+        if (i < errorsLength - 1)
+            diagnostic += "\r\n";
     }
 
-    throw new InvalidOperationException($"Compilation of TypeScript code failed after {sw.Elapsed}: {diagnostic}");
+    throw new InvalidOperationException($"Compilation of TypeScript code failed after {sw.Elapsed}:\r\n{diagnostic}");
 }
 
 Console.WriteLine($"Compilation succeeded after {sw.Elapsed}.");
