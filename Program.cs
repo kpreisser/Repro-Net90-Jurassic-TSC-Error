@@ -97,7 +97,6 @@ if (!ScriptValueIsString(outputTextValue)) {
 }
 
 Console.WriteLine($"Compilation succeeded after {sw.Elapsed}.");
-Console.ReadKey();
 
 static bool ScriptValueIsString([NotNullWhen(true)] object? value)
 {
