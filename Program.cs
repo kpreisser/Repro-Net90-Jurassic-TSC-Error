@@ -108,8 +108,3 @@ static bool ScriptValueIsUndefined([NotNullWhen(false)] object? value)
 {
     return value is null or Undefined;
 }
-
-static bool ScriptValueIsNullOrUndefined([NotNullWhen(false)] object? value)
-{
-    return value is null or Undefined or Null;
-}
