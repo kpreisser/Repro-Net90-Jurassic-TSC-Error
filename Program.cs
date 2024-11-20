@@ -12,16 +12,11 @@ Console.WriteLine(".NET Version: " + RuntimeInformation.FrameworkDescription);
 using var httpClient = new HttpClient();
 
 string typescriptServicesCode = await (await httpClient.GetAsync("https://github.com/microsoft/TypeScript/raw/refs/tags/v4.5.5/lib/typescriptServices.js")).Content.ReadAsStringAsync();
-string scriptApiEnvironmentLib =
+string scriptEnvironmentLib =
     await (await httpClient.GetAsync("https://github.com/microsoft/TypeScript/raw/refs/tags/v4.5.5/lib/lib.es5.d.ts")).Content.ReadAsStringAsync();
-
-string scriptApiLib = File.ReadAllText("scriptApiDeclaration.d.ts");
 
 Console.WriteLine("Starting up TypeScript Compiler...");
 var sw = Stopwatch.StartNew();
-
-const string scriptEnvironmentApiDeclarationFileName = "scriptEnvironmentApiDeclaration.d.ts";
-const string scriptApiDeclarationFileName = "scriptApiDeclaration.d.ts";
 
 string compilerInterfaceScript = File.ReadAllText("typescript-compiler-scriptinterfaceplugin.js");
 
@@ -49,8 +44,7 @@ var compilerOptions = getScriptPluginCompilerOptionsFunction!.CallLateBound(
 var libFiles = engine!.Object.Construct();
 
 // Add the base libs.
-libFiles[scriptEnvironmentApiDeclarationFileName] = scriptApiEnvironmentLib;
-libFiles[scriptApiDeclarationFileName] = scriptApiLib;
+libFiles["environment-lib.d.ts"] = scriptEnvironmentLib;
 
 var resultObject = (ObjectInstance)transpileCodeFunction.CallLateBound(
     Undefined.Value,
