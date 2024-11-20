@@ -28,8 +28,8 @@ var engine = new ScriptEngine() {
 engine.Execute(typescriptServicesCode);
 engine.Execute(compilerInterfaceScript);
 
-// We can now get the functions necessary for compiling Codabix Scripts.
-var tsCompilerObject = (ObjectInstance)engine.Global["CodabixTypeScriptCompiler"];
+// Retrieve the compiler.
+var tsCompilerObject = (ObjectInstance)engine.Global["MyTypeScriptCompiler"];
 var getScriptPluginCompilerOptionsFunction =
         (FunctionInstance)tsCompilerObject["getScriptPluginCompilerOptions"];
 
@@ -38,8 +38,7 @@ var transpileCodeFunction = (FunctionInstance)tsCompilerObject["transpileCode"];
 Console.WriteLine("TypeScript Compiler startup completed after " + sw.Elapsed + ", compiling script...");
 
 var compilerOptions = getScriptPluginCompilerOptionsFunction!.CallLateBound(
-    Undefined.Value,
-    /* editorStrictnessLevel */ 0);
+    Undefined.Value);
 
 var libFiles = engine!.Object.Construct();
 

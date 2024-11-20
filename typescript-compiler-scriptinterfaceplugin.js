@@ -1,19 +1,10 @@
 ﻿"use strict";
 
-// Note: The code from this file was copied (and changed to be ES5-compatible) from
-// file "ext/typescript-compiler.ts" (Codabix.Config).
-
-var CodabixTypeScriptCompiler = (function () {
+var MyTypeScriptCompiler = (function () {
     var libFileName = "lib.d.ts";
 
-    var ScriptEditorStrictness = {
-        Low: 0,
-        Medium: 50,
-        High: 100
-    };
-
     return {
-        getScriptPluginCompilerOptions(editorStrictnessLevel) {
+        getScriptPluginCompilerOptions() {
             var opts = {
                 // Need to force strict mode because the .NET JS Runtime (Jurassic) also forces
                 // strict mode.
@@ -31,13 +22,6 @@ var CodabixTypeScriptCompiler = (function () {
 
                 // Ensure Function.bind(), .call() and .apply() are strongly typed
                 strictBindCallApply: true,
-
-                // TODO: Check whether we should enable this (for all levels) in a future version.
-                // While it does not fall under the 'strict' family options, the intent of the
-                // TypeScript team is that this option should have been enabled by default, but
-                // because of existing code (and people that learned the existing type system) it
-                // is not enabled by default.
-                //exactOptionalPropertyTypes: true,
 
                 // Explicitely disallow unreachable code, even in "Low" mode.
                 // This was alread the default in earlier TS versions but in the current one
@@ -64,29 +48,6 @@ var CodabixTypeScriptCompiler = (function () {
                 noResolve: true,
                 module: ts.ModuleKind.None,
             };
-
-            // Adjust the options according to the Editor Strictness Level.
-            if (editorStrictnessLevel >= ScriptEditorStrictness.Medium) {
-                // Add medium strict options. "noImplicitAny" and "noImplicitThis" are enabled here,
-                // to make it easier for JS developers that don't know how to declare types in
-                // TypeScript when using level "Low".
-                opts.noImplicitAny = true;
-                opts.noImplicitThis = true;
-                // Raise an error if no "override" modifier is present for an overridden method.
-                opts.noImplicitOverride = true;
-                // Use unknown instead of any as type for the 'catch' variable.
-                opts.useUnknownInCatchVariables = true;
-                opts.noFallthroughCasesInSwitch = true;
-            }
-
-            if (editorStrictnessLevel >= ScriptEditorStrictness.High) {
-                // Add most strict options.            
-                opts.noImplicitReturns = true;
-                opts.noUnusedLocals = true;
-                opts.noUnusedParameters = true;
-                // Properties accessed by index signature cannot use the dot syntax.
-                opts.noPropertyAccessFromIndexSignature = true;
-            }
 
             return opts;
         },
